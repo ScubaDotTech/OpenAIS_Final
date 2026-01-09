@@ -1,0 +1,238 @@
+Geddy Lucier
+Scuba.Tech Candlewood Lake Project
+
+This script serves to clean and provide initial analytics for the joint ecological survey data (from 2012 - 2020 transect images). 
+
+Note: Transects/Points in years where certain species weren't found/examined/accounted for will receive NA. 
+
+Preamble
+```{r}
+library(tidyverse)
+library(lubridate)
+library(sf)
+library(terra)
+library(readxl)
+library(ggplot2)
+library(ggforce)
+library(stringr)
+library(cowplot)
+library(dplyr)
+```
+
+
+```{r}
+merged_transect <- read_csv("https://raw.githubusercontent.com/ScubaDotTech/OpenAIS_Final/refs/heads/main/data/merged_transect.csv") #START HERE
+
+merged_transect <- merged_transect %>%
+    filter(year != "2007") %>%
+    group_by(year,transect,point) %>%
+    relocate(year) %>%
+    select(-surveyor) # surveyor doesn't matter
+
+species_data <- merged_transect %>%
+  select(c(1:9), myrspi, cerdem) %>%
+  mutate(myrspi_observation = case_when(
+    myrspi == 5 ~ "extremely abundant",
+    myrspi == 4 ~ "abundant",
+    myrspi == 3 ~ "common",
+    myrspi == 2 ~ "uncommon",
+    myrspi == 1 ~ "rare",
+    myrspi == 0 ~ "not present"),
+          cerdem_observation = case_when(
+    cerdem == 5 ~ "extremely abundant",
+    cerdem == 4 ~ "abundant",
+    cerdem == 3 ~ "common",
+    cerdem == 2 ~ "uncommon",
+    cerdem == 1 ~ "rare",
+    cerdem == 0 ~ "not present"),
+    dfs = as.integer(dfs_m_),
+    depth = as.numeric(depth_m_)
+  ) %>% # create classifications  %>%
+select(-dfs_m_, -depth_m_)
+
+
+species_density_counts <- species_data %>%
+  pivot_longer(
+    cols = c(myrspi, cerdem),
+    names_to = "species",
+    values_to = "density"
+  ) 
+
+cerdem_df <- species_density_counts %>% filter(species == "cerdem") %>% 
+  select(-myrspi_observation) %>%
+  group_by(year, cerdem_observation) %>% 
+  mutate(count = n(),
+         present = ifelse(density > 0, 1, 0))
+
+myrspi_df <- species_density_counts %>% filter(species == "myrspi") %>%
+  select(-cerdem_observation) %>%
+  group_by(year, myrspi_observation) %>% 
+    mutate(count = n(),
+         present = ifelse(density > 0, 1, 0))
+```
+
+Cerdem Dataframe Visualization
+```{r}
+ggplot(
+  cerdem_df,
+  aes(
+    x = year,
+    y = count,
+    color = cerdem_observation,
+    group = cerdem_observation
+  )
+) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+
+  scale_color_manual(
+    limits = c(
+      "not present",
+      "rare",
+      "uncommon",
+      "common",
+      "abundant",
+      "extremely abundant",
+      "NA"
+    ),
+    values = c(
+      "not present" = "#7FCDBB",
+      "rare" = "#4292C6",
+      "uncommon" = "#DD1C77",
+      "common" = "#A6761D",
+      "abundant" = "#E34A33",
+      "extremely abundant" = "#31A354",
+      "NA" = "grey60"
+    )
+  ) +
+
+  scale_x_continuous(breaks = seq(min(cerdem_df$year),
+                                  max(cerdem_df$year),
+                                  by = 2)) +
+
+  labs(
+    title = "Ceriodaphnia Density in Candlewood Lake, Connecticut",
+    subtitle = "Observed abundance categories across all sampled transects",
+    x = "Year",
+    y = "Number of observations",
+    color = "Abundance category"
+  ) +
+
+  theme_minimal(base_size = 13) +
+  theme(
+  plot.title = element_text(face = "bold", size = 16),
+  plot.subtitle = element_text(
+    size = 12,
+    margin = ggplot2::margin(b = 10)
+  ),
+  axis.title = element_text(face = "bold"),
+  legend.position = "right",
+  legend.title = element_text(face = "bold"),
+  panel.grid.minor = element_blank(),
+  panel.grid.major.x = element_blank()
+)
+
+```
+Myrspi data visualization
+```{r}
+ggplot(
+  myrspi_df,
+  aes(
+    x = year,
+    y = count,
+    color = myrspi_observation,
+    group = myrspi_observation
+  )
+) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+
+  scale_color_manual(
+    limits = c(
+      "not present",
+      "rare",
+      "uncommon",
+      "common",
+      "abundant",
+      "extremely abundant",
+      "NA"
+    ),
+    values = c(
+      "not present" = "#7FCDBB",
+      "rare" = "#4292C6",
+      "uncommon" = "#DD1C77",
+      "common" = "#A6761D",
+      "abundant" = "#E34A33",
+      "extremely abundant" = "#31A354",
+      "NA" = "grey60"
+    )
+  ) +
+
+  scale_x_continuous(breaks = seq(min(cerdem_df$year),
+                                  max(cerdem_df$year),
+                                  by = 2)) +
+
+  labs(
+    title = "Eurasian Watermilfoil in Candlewood Lake, Connecticut",
+    subtitle = "Observed abundance categories across all sampled transects",
+    x = "Year",
+    y = "Number of observations",
+    color = "Abundance category"
+  ) +
+
+  theme_minimal(base_size = 13) +
+  theme(
+  plot.title = element_text(face = "bold", size = 16),
+  plot.subtitle = element_text(
+    size = 12,
+    margin = ggplot2::margin(b = 10)
+  ),
+  axis.title = element_text(face = "bold"),
+  legend.position = "right",
+  legend.title = element_text(face = "bold"),
+  panel.grid.minor = element_blank(),
+  panel.grid.major.x = element_blank()
+)
+```
+Regression Against populations
+```{r}
+summary(lm(density ~ substrate + depth + dfs + factor(year), data = cerdem_df))
+summary(lm(density ~ substrate + depth + dfs + factor(year), data = myrspi_df))
+
+```
+Ceriodaphnia (abundance, linear model)
+
+Results from the linear regression model indicate that Ceriodaphnia abundance varies significantly with substrate type and year, with more limited effects of depth and dfs. Abundance was significantly higher on muck substrates and modestly higher on sand substrates relative to the reference category, while other substrate types showed no significant differences. Depth exhibited a weak negative association with abundance, suggesting slightly lower densities at greater depths, whereas dfs was not a significant predictor. Year fixed effects revealed substantial interannual variation, with significantly lower abundance in several years, particularly 2009–2014 and 2019–2020, consistent with strong temporal dynamics influencing Ceriodaphnia populations. Overall model fit was modest (adjusted R² ≈ 0.07), indicating that while habitat and year effects are detectable, much of the variation in abundance remains unexplained.
+
+Eurasian watermilfoil (abundance, linear model)
+
+The linear regression results for Eurasian watermilfoil abundance demonstrate strong substrate dependence and pronounced interannual variability. Abundance was significantly lower on ND, rock, and silt substrates, indicating that these substrate types are less favorable for watermilfoil growth. In contrast, muck and sand substrates did not differ significantly from the reference category. Neither depth nor dfs significantly influenced abundance. Year effects were substantial, with marked declines in abundance in 2013, 2017, and 2019, and a temporary increase in 2012, highlighting pronounced year-to-year fluctuations. The model explained a moderate proportion of variance (adjusted R² ≈ 0.15), suggesting that substrate and temporal factors play a meaningful role in shaping watermilfoil abundance.
+
+
+
+
+```{r}
+summary(
+  glm(present ~ substrate + depth + dfs + factor(year),
+      family = binomial,
+      data = cerdem_df)
+)
+
+
+summary(
+  glm(present ~ substrate + depth + dfs + factor(year),
+      family = binomial,
+      data = myrspi_df)
+)
+```
+Ceriodaphnia
+
+A logistic regression model of Ceriodaphnia presence indicated strong habitat and temporal effects. Presence was substantially more likely on muck substrates, with transects on muck exhibiting over five times higher odds of occurrence relative to the reference substrate, holding depth, dfs, and year constant. Sand substrates showed a weaker, marginally positive association with presence, while several substrates (including ND, organic, and rock) exhibited near-zero detection rates, resulting in unstable coefficient estimates consistent with quasi-complete separation. Depth was weakly negatively associated with presence, whereas dfs showed no significant effect. Year fixed effects revealed pronounced interannual variability, with significantly lower probabilities of presence in most years following the reference year, particularly in the late 2010s, indicating strong lake-wide temporal dynamics independent of habitat characteristics.
+
+Eurasian watermilfoil
+
+Results from the logistic regression model for Eurasian watermilfoil demonstrated strong substrate dependence and moderate temporal variation in presence. ND, rock, and silt substrates were all associated with significantly lower odds of occurrence, suggesting these substrate types inhibit establishment. In contrast, organic and peat substrates exhibited consistently high presence rates, though sparse sampling led to unstable coefficient estimates. Depth was not a significant predictor of presence, while dfs showed a modest but statistically significant negative association, indicating reduced establishment probability at higher dfs values. Year effects were significant in several years, notably 2013, 2017, and 2019, reflecting interannual fluctuations in presence that were less uniform than those observed for Ceriodaphnia.
+
+
+Together with the presence–absence results, these findings suggest that substrate type primarily governs both establishment and abundance, while interannual processes exert strong lake-wide influence on observed densities.
+
