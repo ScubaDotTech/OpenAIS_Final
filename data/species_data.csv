@@ -1,4 +1,4 @@
-year,transect,point,lattitude,longitude,date,substrate,myrspi,cerdem,myrspi_observation,cerdem_observation,dfs,depth
+year,transect,point,latitude,longitude,date,substrate,myrspi,cerdem,myrspi_observation,cerdem_observation,dfs,depth
 2008,6,1,41.57054,-73.48871,9/4/08,Silt,5,0,extremely abundant,not present,70,3
 2008,6,1,41.5146,-73.45345,9/5/08,Gravel,0,0,not present,not present,80,5.2
 2008,6,1,41.51395,-73.45339,9/5/08,Sand,2,0,uncommon,not present,10,1.2
@@ -254,7 +254,7 @@ year,transect,point,lattitude,longitude,date,substrate,myrspi,cerdem,myrspi_obse
 2010,8,4,41.48045,-73.435,11/16/10,Silt,4,0,abundant,not present,30,1.9
 2010,8,4,41.44712,-73.42973,11/23/10,Sand,0,0,not present,not present,10,0.8
 2011,8,5,41.5709,-73.4885,8/25/11,Muck,2,2,uncommon,uncommon,40,2.2
-2010,8,5,41.571040000000004,-73.48841,9/25/10,Muck,2,0,uncommon,not present,20,1
+2010,8,5,41.57104,-73.48841,9/25/10,Muck,2,0,uncommon,not present,20,1
 2011,8,5,41.57124,-73.48832,8/25/11,Muck,2,2,uncommon,uncommon,2,0.8
 2010,8,5,41.51396,-73.45342,10/14/10,Muck,2,0,uncommon,not present,10,0.8
 2011,8,5,41.42421,-73.45272,9/13/11,Muck,4,2,abundant,uncommon,50,2.2
@@ -629,7 +629,7 @@ year,transect,point,lattitude,longitude,date,substrate,myrspi,cerdem,myrspi_obse
 2014,17,2,41.42757,-73.44944,9/14/14,Muck,0,2,not present,uncommon,10,2
 2014,17,3,41.42753,-73.44944,9/15/14,Muck,3,4,common,abundant,20,3.2
 2014,17,4,41.42745,-73.44959,9/16/14,Muck,4,3,abundant,common,30,3.4
-2014,17,5,41.42739,-73.449700000000007,9/17/14,Muck,3,0,common,not present,40,2.1
+2014,17,5,41.42739,-73.4497,9/17/14,Muck,3,0,common,not present,40,2.1
 2014,17,6,41.42738,-73.44978,9/18/14,Muck,2,2,uncommon,uncommon,50,1.3
 2014,18,1,41.42762,-73.44926,9/12/14,Sand,1,2,rare,uncommon,5,0.2
 2014,18,2,41.9715,-73.4437,9/11/14,Silt,0,0,not present,not present,80,4.3
@@ -915,7 +915,7 @@ year,transect,point,lattitude,longitude,date,substrate,myrspi,cerdem,myrspi_obse
 2017,55,2,41.42722,-73.44978,9/8/17,Gravel,3,0,common,not present,60,2
 2017,55,3,41.42712,-73.44999,9/10/17,Gravel,4,0,abundant,not present,80,1.6
 2017,55,4,41.4273,-73.4498,9/7/17,Gravel,3,0,common,not present,50,3
-2017,55,5,41.42739,-73.449700000000007,9/6/17,Gravel,3,2,common,uncommon,40,1.5
+2017,55,5,41.42739,-73.4497,9/6/17,Gravel,3,2,common,uncommon,40,1.5
 2017,56,1,41.42758,-73.4494,9/2/17,Sand,3,3,common,common,5,2
 2017,56,2,41.42747,-73.44951,9/4/17,Silt,0,4,not present,abundant,20,2.5
 2017,56,3,41.42744,-73.4496,9/5/17,Silt,3,3,common,common,30,3.3
