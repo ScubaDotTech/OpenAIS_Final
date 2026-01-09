@@ -69,6 +69,8 @@ myrspi_df <- species_density_counts %>% filter(species == "myrspi") %>%
   group_by(year, myrspi_observation) %>% 
     mutate(count = n(),
          present = ifelse(density > 0, 1, 0))
+
+write_csv(species_data, file = "/Users/geddylucier/Documents/GitHub/OpenAIS_Final/data/species_data.csv")
 ```
 
 Cerdem Dataframe Visualization
