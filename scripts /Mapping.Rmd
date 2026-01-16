@@ -1,0 +1,111 @@
+Geddy Lucier
+Scuba.Tech Candlewood Lake Project
+Mapping Document
+```{r}
+library(sf)
+library(terra)
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+```
+
+
+
+```{r}
+  species_data <- read.csv("https://raw.githubusercontent.com/ScubaDotTech/OpenAIS_Final/refs/heads/main/data/species_data.csv")
+
+species_data <- species_data %>%
+  filter(myrspi_observation != "not present" & cerdem_observation != "not present") %>%
+  drop_na(myrspi_observation) %>%
+  drop_na(cerdem_observation)
+
+ct_lakes <- st_read("/Users/geddylucier/Documents/GitHub/OpenAIS/Candlewood_Lake2025/SdT-CT_AIS-Geddy-Winter-2024/shapefiles/fef0ad6f-84a0-42e6-942a-ed3172551e0c.gdb")
+
+candlewood_bbox <- st_bbox(c(
+  xmin = -73.55,  # Western edge
+  xmax = -73.35,  # Eastern edge  
+  ymin = 41.40,   # Southern edge
+  ymax = 41.60    # Northern edge
+), crs = st_crs(4326))  # WGS84
+
+cd <- ct_lakes %>%
+  filter(LAKE_NO == 1490 & SHAPE_Length > 19000 & AV_LEGEND == "Shore")
+
+```
+Plotting Species 
+
+```{r}
+# Convert species to spatial points in WGS84, then transform to match lake
+species_sf <- st_as_sf(species_data, 
+                       coords = c("longitude", "latitude"),
+                       crs = 4326) %>%
+  st_transform(crs = st_crs(cd))
+
+# Get lake bbox and find midpoint
+lake_bbox <- st_bbox(cd)
+mid_y <- (lake_bbox["ymin"] + lake_bbox["ymax"]) / 2
+
+# Set up abundance colors
+abundance_levels <- c("not present", "rare", "uncommon", "common", 
+                     "abundant", "extremely abundant")
+
+abundance_colors <- c("not present" = "#d9d9d9",
+                     "rare" = "#fee5d9", 
+                     "uncommon" = "#fcae91",
+                     "common" = "#fb6a4a",
+                     "abundant" = "#de2d26",
+                     "extremely abundant" = "#a50f15")
+
+species_sf <- species_sf %>%
+  mutate(myrspi_observation = factor(myrspi_observation, levels = abundance_levels),
+         cerdem_observation = factor(cerdem_observation, levels = abundance_levels))
+
+# NORTH MYRSPI
+ggplot() +
+  geom_sf(data = cd, fill = "lightblue", color = "darkblue", alpha = 0.3) +
+  geom_sf(data = species_sf, aes(color = myrspi_observation), size = 3, alpha = 0.7) +
+  scale_color_manual(values = abundance_colors, name = "Myrspi", drop = FALSE) +
+  coord_sf(xlim = c(lake_bbox["xmin"], lake_bbox["xmax"]),
+           ylim = c(mid_y, lake_bbox["ymax"])) +
+  theme_void() +
+  theme(legend.position = "right",
+        plot.title = element_text(hjust = 0.5, size = 14)) +
+  labs(title = "Myrspi - North Candlewood Lake")
+
+# SOUTH MYRSPI
+ggplot() +
+  geom_sf(data = cd, fill = "lightblue", color = "darkblue", alpha = 0.3) +
+  geom_sf(data = species_sf, aes(color = myrspi_observation), size = 3, alpha = 0.7) +
+  scale_color_manual(values = abundance_colors, name = "Myrspi", drop = FALSE) +
+  coord_sf(xlim = c(lake_bbox["xmin"], lake_bbox["xmax"]),
+           ylim = c(lake_bbox["ymin"], mid_y)) +
+  theme_void() +
+  theme(legend.position = "right",
+        plot.title = element_text(hjust = 0.5, size = 14)) +
+  labs(title = "Myrspi - South Candlewood Lake")
+
+# NORTH CERDEM
+ggplot() +
+  geom_sf(data = cd, fill = "lightblue", color = "darkblue", alpha = 0.3) +
+  geom_sf(data = species_sf, aes(color = cerdem_observation), size = 3, alpha = 0.7) +
+  scale_color_manual(values = abundance_colors, name = "Cerdem", drop = FALSE) +
+  coord_sf(xlim = c(lake_bbox["xmin"], lake_bbox["xmax"]),
+           ylim = c(mid_y, lake_bbox["ymax"])) +
+  theme_void() +
+  theme(legend.position = "right",
+        plot.title = element_text(hjust = 0.5, size = 14)) +
+  labs(title = "Cerdem - North Candlewood Lake")
+
+# SOUTH CERDEM
+ggplot() +
+  geom_sf(data = cd, fill = "lightblue", color = "darkblue", alpha = 0.3) +
+  geom_sf(data = species_sf, aes(color = cerdem_observation), size = 3, alpha = 0.7) +
+  scale_color_manual(values = abundance_colors, name = "Cerdem", drop = FALSE) +
+  coord_sf(xlim = c(lake_bbox["xmin"], lake_bbox["xmax"]),
+           ylim = c(lake_bbox["ymin"], mid_y)) +
+  theme_void() +
+  theme(legend.position = "right",
+        plot.title = element_text(hjust = 0.5, size = 14)) +
+  labs(title = "Cerdem - South Candlewood Lake")
+```
+

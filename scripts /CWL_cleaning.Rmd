@@ -194,8 +194,19 @@ ggplot(
   legend.title = element_text(face = "bold"),
   panel.grid.minor = element_blank(),
   panel.grid.major.x = element_blank()
-)
+) 
+
+
 ```
+Different features that drive growth
+- movement between different species
+- does it take several years of various characteristics
+- lagged dependent variable 
+- exponential growth vs linear growth perspective. 
+- make sure transect/point features stay consistent
+- interspecies relationship 
+
+
 Regression Against populations
 ```{r}
 summary(lm(density ~ substrate + depth + dfs + factor(year), data = cerdem_df))
